@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import pyvisa
+import Gpib
 from pymeasure.instruments.racal import Racal1992
 
 if True:
@@ -34,6 +35,8 @@ if True:
     print(inst.read_bytes(21))
     print(inst.write("RSF"))
     print(inst.read_bytes(21))
+    print(inst.write("RUT"))
+    print(inst.read_bytes(21))
 
 
     print(inst.write("CK"))
@@ -52,4 +55,9 @@ if False:
     inst = Racal1992("GPIB0::14::INST")
     inst.write("RMS")
     print(inst.read())
+
+
+if False:
+    print(Gpib.gpib.listener(0,14))
+    dev = Gpib.gpib.dev(0,1)
 

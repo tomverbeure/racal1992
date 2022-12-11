@@ -6,6 +6,7 @@
 
 * There's a buffer in the instrument in which values get written whenever
   there's a new measurement.
+* *all* messages read from instrument are 21 bytes long. No exceptions.
 * When you issue a command that requests data back, the buffer
   gets cleared.
 
@@ -45,6 +46,7 @@
   * RMZ: math constant Z
   * RRS: resolution
   * RSF: special function
+  * RUT: unit type
 
 * If there is no data, pyvisa will time out. 
 * Configure SRQ and use `wait_for_srq`, however, that gives the
