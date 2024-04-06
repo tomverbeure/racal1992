@@ -6,6 +6,35 @@ from pymeasure.instruments.racal import Racal1992
 
 if False:
     rm = pyvisa.ResourceManager()
+    inst = rm.open_resource("GPIB::14")
+
+    #print("0x%02x" % inst.stb)
+
+    inst.write_termination='\r\n'   # Default pyvisa termination
+    inst.write("RUT")
+    if (inst.stb & 0x7) == 5:
+        inst.write_termination='\n\r'
+        inst.write("RUT")
+    if (inst.stb & 0x7) == 5:
+        raise Exception("Can't find working write termination!")
+    else:
+        unit_type = inst.read_bytes(21)
+
+        print(unit_type)
+
+    inst.write("IP")    # Default settings
+    inst.write("CK")    # Self-check mode
+    inst.write("SRS 8")
+
+    while True:
+        while (inst.stb & 0x10) == 0:
+            print(".", end='', flush=True)
+            pass
+        print(inst.read_bytes(21))
+
+
+if False:
+    rm = pyvisa.ResourceManager()
 
     # Prints all GPIB traffic...
     pyvisa.log_to_screen()
@@ -14,7 +43,8 @@ if False:
     inst = rm.open_resource("GPIB::14")
     inst.chunk_size=21
     inst.max_count_read=21
-    inst.read_termination='\n'
+    #inst.write_termination='\n\r'
+    inst.write_termination='\n\r'
 
     # Reset to default settings
     #print(inst.write("IP"))
@@ -22,23 +52,23 @@ if False:
     # Switch to self-test mode: internal 10MHz clock is measured.
     #print(inst.write("CK"))
 
-    print(inst.write("RGS"))
+    inst.write("RGS")
     print(inst.read_bytes(21))
-    print(inst.write("RLA"))
+    inst.write("RLA")
     print(inst.read_bytes(21))
-    print(inst.write("RLB"))
+    inst.write("RLB")
     print(inst.read_bytes(21))
-    print(inst.write("RMS"))
+    inst.write("RMS")
     print(inst.read_bytes(21))
-    print(inst.write("RMX"))
+    inst.write("RMX")
     print(inst.read_bytes(21))
-    print(inst.write("RMZ"))
+    inst.write("RMZ")
     print(inst.read_bytes(21))
-    print(inst.write("RRS"))
+    inst.write("RRS")
     print(inst.read_bytes(21))
-    print(inst.write("RSF"))
+    inst.write("RSF")
     print(inst.read_bytes(21))
-    print(inst.write("RUT"))
+    inst.write("RUT")
     print(inst.read_bytes(21))
 
     print(inst.write("CK"))
@@ -54,15 +84,28 @@ if False:
 
 if True:
     # Future pymeasure support?
-    #pyvisa.log_to_screen()
+    pyvisa.log_to_screen()
     inst = Racal1992("GPIB::14", timeout=10000)
     inst.resolution=7
-    print(inst.resolution)
-    print(inst.unit)
-    for i in range(10):
-        print(inst.measured_value)
+    #print(inst.resolution)
+    #print(inst.unit)
 
-if False:
-    print(Gpib.gpib.listener(0,14))
-    dev = Gpib.gpib.dev(0,1)
+    inst.channel_settings('A', 
+                coupling="DC", 
+                impedance='1M', 
+                slope='neg',
+                trigger='auto',
+                filtering=False,
+                trigger_level=1.5)
+    print("0x%02x" % inst.adapter.read_stb())
+    print(inst.trigger_level('A'))
+    inst.operating_mode('frequency_a')
+    inst.math_mode(False)
+    inst.math_x = 1000
+    inst.math_z = 2
+
+
+    for i in range(10):
+        inst.wait_for_measurement(timeout=2)
+        print(inst.measured_value)
 
